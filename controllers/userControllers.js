@@ -33,7 +33,11 @@ exports.loginUser = async (req, res) => {
             const matchedPassword = await bcrypt.compare(password, emailExists.password);
             if(matchedPassword) {
                 const token = await emailExists.generateToken();
-                res.cookie("tokenCookie", token, {expires: new Date( Date.now() + 1 * 24 * 60 * 60 * 1000 ), httpOnly: true });
+                res.cookie(
+                    "tokenCookie", token, {expires: new Date( Date.now() + 1 * 24 * 60 * 60 * 1000 ), 
+                    withCredentials: true,
+                    httpOnly: false 
+                });
                 res.status(201).json({message: { token, emailExists, message: "User logged in successfully" }});
             } else {
                 res.status(422).json({ error: "Password does not match" })
