@@ -1,0 +1,125 @@
+# Route Planner
+# Given a set of cities and distances between every pair of cities, the problem is to find the shortest possible route that visits every city
+# exactly once and returns to the starting point.
+
+# Overall, this code provides a user-friendly interface to find the lowest cost between cities using the Floyd-Warshall algorithm, 
+# handling user input and displaying results accordingly.
+    
+#This line sets max_value to positive infinity. 
+#It's used to represent infinity in the Floyd-Warshall algorithm for indicating unreachable vertices.
+max_value = float('inf')
+
+# This class represents a flight with 3 attributes:
+# source: The source city of the flight.
+# dest: The destination city of the flight.
+# cost: The cost of flight.
+class Flight:
+    def __init__(self, source, dest, cost):
+        self.source = source
+        self.dest = dest
+        self.cost = cost
+
+# This class represents a graph of cities and flights. 
+# It has attributes no_of_city and no_of_flight, indicating the number of cities and flights, respectively. 
+# It also has a list flights to store Flight objects.
+class Graph:
+    def __init__(self, no_of_city, no_of_flight):
+        self.no_of_city = no_of_city
+        self.no_of_flight = no_of_flight
+        self.flights = [Flight(0, 0, 0) for _ in range(no_of_flight)]
+
+# This function creates a graph object with a given number of cities and flights.
+def create_map(no_of_city, no_of_flight):
+    return Graph(no_of_city, no_of_flight)
+
+# This function prints the costs between cities. 
+# It takes the number of cities n, a 2D array A representing costs between cities, and a list city containing the names of the cities.
+def print_costs(n, A, city):
+    print("Vertex\t distance from source")
+    for i in range(n):
+        for j in range(n):
+            if A[i][j] != 0 and A[i][j] != max_value:
+                print(f"From {city[i]} to {city[j]} cost is {A[i][j]}")
+
+# This function computes the lowest cost between cities using the Floyd-Warshall algorithm. 
+# It initializes a 2D array A to store costs between cities, sets initial values based on flight costs, 
+# and iteratively updates the array with minimum costs.
+def lowest_cost(g):
+    no_of_city = g.no_of_city
+    no_of_flight = g.no_of_flight
+    global max_value
+
+    A = [[0] * no_of_city for _ in range(no_of_city)]
+    
+    for i in range(no_of_flight):
+        j = g.flights[i].source
+        k = g.flights[i].dest
+        A[j][k] = g.flights[i].cost
+
+    for i in range(no_of_city):
+        for j in range(no_of_city):
+            if i != j and A[i][j] == 0:
+                A[i][j] = max_value
+
+    for k in range(no_of_city):
+        for i in range(no_of_city):
+            for j in range(no_of_city):
+                A[i][j] = min(A[i][j], A[i][k] + A[k][j])
+
+    return A
+
+# This function finds the index of a city in the list city. If the city is not found, it appends it to the list city.
+def find_city(s, city):
+    if s in city:
+        return city.index(s)
+    else:
+        city.append(s)
+        return len(city) - 1
+
+# This function is the entry point of the program. 
+# It takes user input for the "number of cities" and "flights", creates a graph, takes details of flights from the user, 
+# computes the lowest cost between cities, and provides options to the user to find the lowest cost between specific cities 
+# or to see a list of lowest costs between every pair of cities.
+def main():
+    V = int(input("Enter no of Cities: "))
+    E = int(input("Enter no of flights: "))
+    gf = create_map(V, E)
+
+    for i in range(E):
+        p = input(f"Enter details for flight {i+1} (Use lowercase letters and numbers only):\nSource city: ")
+        q = input("Destination city: ")
+        gf.flights[i].source = find_city(p, city)
+        gf.flights[i].dest = find_city(q, city)
+        gf.flights[i].cost = float(input("Amount of Cost: "))
+
+    A = lowest_cost(gf)
+
+    while True:
+        n = int(input("1: Enter 1 to see lowest cost to travel between 2 cities:\n"
+                      "2: Enter 2 to see all the list of lowest cost between every 2 cities\n"
+                      "3: Enter 3 to exit\n"))
+
+        if n == 1:
+            p = input("Source city: ")
+            i = find_city(p, city)
+            if i >= V:
+                print("You Entered Wrong Input")
+                city.pop()
+            else:
+                q = input("Destination city: ")
+                j = find_city(q, city)
+                if j >= V:
+                    print("You Entered Wrong Input")
+                    city.pop()
+                else:
+                    print(f"The Cost is: {A[i][j]}")
+        elif n == 2:
+            print_costs(V, A, city)
+        elif n == 3:
+            print("Thank You")
+            break
+
+# This block ensures that the main function is executed only if the script is run directly, not if it is imported as a module.
+if __name__ == "__main__":
+    city = []
+    main()
